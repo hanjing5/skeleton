@@ -30,7 +30,14 @@ public class TagController {
 	@PUT
 	@Path("/tags/{tag}")
 	public void toggleTag(@PathParam("tag") String tagName, Integer body) {
-	    tags.insert(body, tagName);
+		TagsRecord foo = tags.findByReceiptidTag(body, tagName);
+		System.out.println(foo);
+		System.out.println(foo == null);
+		if (foo == null) {
+			tags.insert(body, tagName);
+		} else {
+			tags.delete(body, tagName);
+		}
 	}
 
     @GET

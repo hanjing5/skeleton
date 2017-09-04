@@ -31,6 +31,19 @@ public class TagDao {
         return tagsRecord.getId();
     }
 
+    public void delete(Integer receiptId, String tag) {
+        dsl.delete(TAGS)
+            .where(TAGS.RECEIPT_ID.eq(receiptId), TAGS.TAG.eq(tag))
+            .execute();
+    }
+
+    public TagsRecord findByReceiptidTag(Integer receiptId, String tag) {
+        return dsl
+                .selectFrom(TAGS)
+                .where(TAGS.RECEIPT_ID.eq(receiptId), TAGS.TAG.eq(tag))
+                .fetchOne();
+    }
+
     public List<TagsRecord> findByTag(String tag) {
         return dsl
                 .selectFrom(TAGS)
