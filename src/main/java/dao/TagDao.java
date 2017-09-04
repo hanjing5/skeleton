@@ -44,7 +44,7 @@ public class TagDao {
                 .fetchOne();
     }
 
-    public List<TagsRecord> findByTag(String tag) {
+    public List<TagsRecord> getAllByTags(String tag) {
         return dsl
                 .selectFrom(TAGS)
                 .where(TAGS.TAG.eq(tag))

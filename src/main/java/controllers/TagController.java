@@ -41,6 +41,13 @@ public class TagController {
 	}
 
     @GET
+    @Path("/tags/{tag}")
+    public List<TagResponse> getTags(@PathParam("tag") String tagName) {
+       	List<TagsRecord> tagRecords = tags.getAllByTags(tagName);
+        return tagRecords.stream().map(TagResponse::new).collect(toList());
+    }
+
+    @GET
     @Path("/tags")
     public List<TagResponse> getTags() {
        	List<TagsRecord> tagRecords = tags.getAllTags();
