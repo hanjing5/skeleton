@@ -53,11 +53,4 @@ public class TagController {
        	List<TagsRecord> tagRecords = tags.getAllTags();
         return tagRecords.stream().map(TagResponse::new).collect(toList());
     }
-
-    //     @GET
-    // @Path("/tags/{tag}")
-    // public List<TagResponse> getTags(TagDao tags) {
-    //    	List<TagsRecord> receiptRecords = receipts.getAllReceipts();
-    //     return receiptRecords.stream().map(TagResponse::new).collect(toList());
-    // }
 }
