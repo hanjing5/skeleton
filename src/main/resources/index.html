@@ -32,19 +32,50 @@
     <script>
         // This is the idiomatic way to ensure that JQuery does not
         // execute until the page has loaded
-        function genTagPill(tag_name) {
-            return '<div class="tagValue">' + tag_name + '</div>'
+        function removeTagPill(that) {
+            console.log(that);
+            var receipt_id = $(that).attr('receipt-id');
+            var tag_name = $(that).html();
+
+            // var tag_name = $(that).prev().val();
+            // console.log('tag_name '+ tag_name);
+            // var receiptObj = $(that).parent().parent();
+            // var merchant_id = receiptObj.children('div.receipt-id').text();
+
+            $.ajax({
+              type: "PUT",
+              url: "/tags/" + tag_name,
+              data: receipt_id,
+              contentType: "application/json; charset=utf-8", 
+              success: function() {
+                console.log('remove successful');
+                // addTagElement(receiptObj, tag_name);
+              },
+              error: function(model, xhr, options){
+                console.log('response is : ');
+                console.log(xhr.responseText);
+              }
+            });
+            $(that).remove();
+        }
+
+
+        function genTagPill(receipt_id, tag_name) {
+            return '<div class="tagValue" onclick="removeTagPill(this)" receipt-id="'+ receipt_id +'">' + tag_name + '</div>'
         }
 
         function genTagCells(tag) {
-            $('#tag-holder-for-receipt-id-' + tag.id).append(genTagPill(tag.tag));
+            $('#tag-holder-for-receipt-id-' + tag.receiptId).append(genTagPill(tag.receiptId, tag.tag));
         }
 
         function addTagElement(receiptObj, tag_name) {
-            console.log('addTagElmenet');
-            console.log(receiptObj.children('div.tags'));
-            console.log('tag_name ' + tag_name);
-            receiptObj.append(genTagPill (tag_name));
+            // console.log('addTagElmenet');
+            // console.log(receiptObj.children('div.tags'));
+            // console.log('tag_name ' + tag_name);
+            console.log(receiptObj);
+            console.log(receiptObj.children('div.receipt-id').html());
+            var receipt_id = receiptObj.children('div.receipt-id').html();
+            receiptObj.append(genTagPill(receipt_id, tag_name));
         }
 
         function removeTag(that) {
@@ -89,7 +120,7 @@
         }
 
         function genReceiptCell(id, merchant, amount, created) {
-            return `<div class="receipt" id="receipt-id-" + ${id}>
+            return `<div class="receipt" id="receipt-id-${id}">
                         <div class="receipt-id">${id}</div>
                         <div class="merchant">${merchant}</div>
                         <div class="amount">${amount}</div>
