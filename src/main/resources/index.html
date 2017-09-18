@@ -32,6 +32,20 @@
     <script>
         // This is the idiomatic way to ensure that JQuery does not
         // execute until the page has loaded
+        function genTagPill(tag_name) {
+            return '<div class="tagValue">' + tag_name + '</div>'
+        }
+
+        function genTagCells(tag) {
+            $('#tag-holder-for-receipt-id-' + tag.id).append(genTagPill(tag.tag));
+        }
+
+        function addTagElement(receiptObj, tag_name) {
+            console.log('addTagElmenet');
+            console.log(receiptObj.children('div.tags'));
+            console.log('tag_name ' + tag_name);
+            receiptObj.append(genTagPill (tag_name));
+        }
 
         function removeTag(that) {
             // var tagInput = '<div><input class="tag_input" /><div class="button">Enter</div></div>'
@@ -39,9 +53,10 @@
             
             var tag_name = $(that).prev().val();
             console.log('tag_name '+ tag_name);
-            var merchant_id = $(that).parent().parent().children('div.merchant-id').text();
+            var receiptObj = $(that).parent().parent();
+            var merchant_id = receiptObj.children('div.receipt-id').text();
 
-            console.log('merchant-id ' + merchant_id);
+            console.log('receipt-id ' + merchant_id);
 
             // $(that).click(function( event ) {
             console.log('triggered');
@@ -53,9 +68,9 @@
               contentType: "application/json; charset=utf-8", 
               success: function() {
                 console.log('success!');
-                // var cellContent = genReceiptCell($('#merchant-id').val(), $('#merchant').val(), $('#amount').val(), $('#created').val());
                 // console.log(cellContent)
                 // $('#receiptList').append(cellContent);
+                addTagElement(receiptObj, tag_name);
               },
               error: function(model, xhr, options){
 
@@ -63,9 +78,7 @@
                 console.log(xhr.responseText);
               }
             });
-            // event.preventDefault();
-            // };
-            // );
+            
 
             $(that).parent().remove();
         }
@@ -76,12 +89,12 @@
         }
 
         function genReceiptCell(id, merchant, amount, created) {
-            return `<div class="receipt">
-                        <div class="merchant-id">${id}</div>
+            return `<div class="receipt" id="receipt-id-" + ${id}>
+                        <div class="receipt-id">${id}</div>
                         <div class="merchant">${merchant}</div>
                         <div class="amount">${amount}</div>
                         <div class="created">${created}</div>
-                        <div class="tags"></div>
+                        <div class="tags" id="tag-holder-for-receipt-id-${id}"></div>
                         <span class="receiptTag">t1-placeholder</span>
                         <div class='button add-tag' onclick="foo(this)">Add +</div>
                         <div class='input-holder'></div>
@@ -99,6 +112,19 @@
                     $(cellContent)
                         .appendTo($("#receiptList"));
                 }
+                $.ajax({
+                  url: '/tags',
+                  // data: data,
+                  success: function (tags){
+
+                    for(var i=0; i < tags.length; i++) {
+                        var tag = tags[i];
+                        console.log(tag);
+                        genTagCells(tag);
+                    }
+                  },
+                  // dataType: dataType
+                });
             })
 
             $( "#add-receipt" ).click(function() {
@@ -132,7 +158,7 @@
           data: '{"merchant": "'+$('#merchant').val()+'","amount":'+$('#amount').val()+'}',
           contentType: "application/json; charset=utf-8", 
           success: function() {
-            var cellContent = genReceiptCell($('#merchant-id').val(), $('#merchant').val(), $('#amount').val(), $('#created').val());
+            var cellContent = genReceiptCell($('#receipt-id').val(), $('#merchant').val(), $('#amount').val(), $('#created').val());
             console.log(cellContent)
             $('#receiptList').append(cellContent);
           }
