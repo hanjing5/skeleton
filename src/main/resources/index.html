@@ -86,6 +86,18 @@
             receiptObj.append(genTagPill(receipt_id, tag_name));
         }
 
+        function detectEnter(that) {
+            console.log('is tthishis invoked?');
+            $(that).on("keypress", function(e) {
+                console.log('is this invoked?');
+                if (e.keyCode == 13) {
+                    console.log("Enter pressed");
+                    var enter_button = $(that).siblings();
+                    removeTag(enter_button);
+                }
+            })
+        }
+
         function removeTag(that) {
             // var tagInput = '<div><input class="tag_input" /><div class="button">Enter</div></div>'
             // $(that).after(`${tagInput}`);
@@ -121,7 +133,7 @@
         }
 
         function foo(that) {
-            var tagInput = '<div><input class="tag_input" /><div class="button btn-warning btn" onclick=removeTag(this)>Enter</div></div>'
+            var tagInput = '<div><input class="tag_input" onclick=detectEnter(this) /><div class="button btn-warning btn" onclick=removeTag(this)>Enter</div></div>'
             $(that).after(`${tagInput}`);
         }
 
@@ -198,8 +210,8 @@
           url: "/receipts",
           data: '{"merchant": "'+$('#merchant').val()+'","amount":'+$('#amount').val()+'}',
           contentType: "application/json; charset=utf-8", 
-          success: function() {
-            var cellContent = genReceiptCell($('#receipt-id').val(), $('#merchant').val(), $('#amount').val(), Math.floor(Date.now() / 1000));
+          success: function(receipt_id) {
+            var cellContent = genReceiptCell(receipt_id, $('#merchant').val(), $('#amount').val(), Math.floor(Date.now() / 1000));
             console.log(cellContent)
             $('#receiptList').append(cellContent);
           }
