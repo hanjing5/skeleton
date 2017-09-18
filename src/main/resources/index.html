@@ -4,8 +4,16 @@
 <head>
     <link rel="stylesheet" href="style.css" />
     <script data-require="jquery@*" data-semver="3.1.1" src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
+        <!-- Custom fonts for this template -->
+    <link href="https://blackrockdigital.github.io/startbootstrap-freelancer/vendor/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet" type="text/css">
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic" rel="stylesheet" type="text/css">
+
+    <!-- Custom styles for this template -->
+    <link href="https://blackrockdigital.github.io/startbootstrap-freelancer/css/freelancer.min.css" rel="stylesheet">
     <style>
-        #container {border: 1px solid brown;}
+        /*#container {border: 1px solid brown;}
         H1 {float: left;}
 
         .button{
@@ -26,7 +34,7 @@
         .receipt {
             background-color: #eee;
             margin-bottom: 5px;
-        }
+        }*/
 
     </style>
     <script>
@@ -61,7 +69,7 @@
 
 
         function genTagPill(receipt_id, tag_name) {
-            return '<div class="tagValue" onclick="removeTagPill(this)" receipt-id="'+ receipt_id +'">' + tag_name + '</div>'
+            return '<div class="tagValue badge badge-pill badge-info" style="margin-right:5px" onclick="removeTagPill(this)" receipt-id="'+ receipt_id +'">' + tag_name + '</div>'
         }
 
         function genTagCells(tag) {
@@ -72,20 +80,20 @@
             // console.log('addTagElmenet');
             // console.log(receiptObj.children('div.tags'));
             // console.log('tag_name ' + tag_name);
-            console.log(receiptObj);
-            console.log(receiptObj.children('div.receipt-id').html());
-            var receipt_id = receiptObj.children('div.receipt-id').html();
+            // console.log(receiptObj);
+            // console.log(receiptObj.children('div.receipt-id').html());
+            var receipt_id = receiptObj.children('div.receipt-id.col').html();
             receiptObj.append(genTagPill(receipt_id, tag_name));
         }
 
         function removeTag(that) {
             // var tagInput = '<div><input class="tag_input" /><div class="button">Enter</div></div>'
             // $(that).after(`${tagInput}`);
-            
             var tag_name = $(that).prev().val();
             console.log('tag_name '+ tag_name);
-            var receiptObj = $(that).parent().parent();
-            var merchant_id = receiptObj.children('div.receipt-id').text();
+            var receiptObj = $(that).parent().parent().parent();
+            console.log(receiptObj);
+            var merchant_id = receiptObj.children('div.receipt-id.col').text();
 
             console.log('receipt-id ' + merchant_id);
 
@@ -99,8 +107,6 @@
               contentType: "application/json; charset=utf-8", 
               success: function() {
                 console.log('success!');
-                // console.log(cellContent)
-                // $('#receiptList').append(cellContent);
                 addTagElement(receiptObj, tag_name);
               },
               error: function(model, xhr, options){
@@ -115,20 +121,20 @@
         }
 
         function foo(that) {
-            var tagInput = '<div><input class="tag_input" /><div class="button" onclick=removeTag(this)>Enter</div></div>'
+            var tagInput = '<div><input class="tag_input" /><div class="button btn-warning btn" onclick=removeTag(this)>Enter</div></div>'
             $(that).after(`${tagInput}`);
         }
 
         function genReceiptCell(id, merchant, amount, created) {
-            return `<div class="receipt" id="receipt-id-${id}">
-                        <div class="receipt-id">${id}</div>
-                        <div class="merchant">${merchant}</div>
-                        <div class="amount">${amount}</div>
-                        <div class="created">${created}</div>
-                        <div class="tags" id="tag-holder-for-receipt-id-${id}"></div>
-                        <span class="receiptTag">t1-placeholder</span>
-                        <div class='button add-tag' onclick="foo(this)">Add +</div>
-                        <div class='input-holder'></div>
+            return `<div class="receipt row align-items-center" id="receipt-id-${id}">
+                        <div class="created col">${created}</div>
+                        <div class="receipt-id col" style="display:none">${id}</div>
+                        <div class="merchant col">${merchant}</div>
+                        <div class="amount col">${amount}</div>
+                        <div class="col">
+                            <div class='button add-tag btn btn-warning' onclick="foo(this)">Add +</div>
+                            <div class="tags" id="tag-holder-for-receipt-id-${id}"></div>
+                        </div>
                     </div>`
         }
 
@@ -143,18 +149,15 @@
                     $(cellContent)
                         .appendTo($("#receiptList"));
                 }
+
                 $.ajax({
                   url: '/tags',
-                  // data: data,
                   success: function (tags){
-
                     for(var i=0; i < tags.length; i++) {
                         var tag = tags[i];
-                        console.log(tag);
                         genTagCells(tag);
                     }
                   },
-                  // dataType: dataType
                 });
             })
 
@@ -168,28 +171,35 @@
 </head>
 
 <body>
-<DIV id="container">
-    <h1>My receipts</h1>
-    <div class="button" id="add-receipt">+</div>
+<DIV id="container" class="container">
+    <h1 style="margin-top:30px">My receipts</h1>
+    <div class="button btn btn-warning pull-right" id="add-receipt">+</div>
     <form action='' style="display:none" id='add-receipt-form'>
         <input type='text' name='merchant' id='merchant' placeholder='merchant'><br>
         <input type='text' name='amount' id='amount' placeholder='amount'><br>
-        <div class='button' id='cancel-receipt'>cancel</div>
-        <div class='button' id='save-receipt'>save</div>
+        <div class="row">
+            <div class='button col btn btn-warning' id='cancel-receipt'>cancel</div>
+            <div class='button col btn btn-warning' id='save-receipt'>save</div>
+        </div>
     </form>
-    <div id="receiptList">
+    <div id="receiptList" style="margin-top:50px">
+        <div class="row align-items-center">
+            <div class="col"><h5>Time</h5></div>
+            <div class="col"><h5>Merchant</h5></div>
+            <div class="col"><h5>$</h5></div>
+            <div class="col"><h5>Tags</h5></div>
+        </div>
     </div>
 </DIV>
 <script>
     $( "#save-receipt" ).click(function( event ) {
-        // alert('asdfasd');
         $.ajax({
           type: "POST",
           url: "/receipts",
           data: '{"merchant": "'+$('#merchant').val()+'","amount":'+$('#amount').val()+'}',
           contentType: "application/json; charset=utf-8", 
           success: function() {
-            var cellContent = genReceiptCell($('#receipt-id').val(), $('#merchant').val(), $('#amount').val(), $('#created').val());
+            var cellContent = genReceiptCell($('#receipt-id').val(), $('#merchant').val(), $('#amount').val(), Math.floor(Date.now() / 1000));
             console.log(cellContent)
             $('#receiptList').append(cellContent);
           }
