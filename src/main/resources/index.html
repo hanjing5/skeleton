@@ -32,17 +32,80 @@
     <script>
         // This is the idiomatic way to ensure that JQuery does not
         // execute until the page has loaded
+
+        function removeTag(that) {
+            // var tagInput = '<div><input class="tag_input" /><div class="button">Enter</div></div>'
+            // $(that).after(`${tagInput}`);
+            
+            var tag_name = $(that).prev().val();
+            console.log('tag_name '+ tag_name);
+            var merchant_id = $(that).parent().parent().children('div.merchant-id').text();
+
+            console.log('merchant-id ' + merchant_id);
+
+            // $(that).click(function( event ) {
+            console.log('triggered');
+
+            $.ajax({
+              type: "PUT",
+              url: "/tags/" + tag_name,
+              data: merchant_id,
+              contentType: "application/json; charset=utf-8", 
+              success: function() {
+                console.log('success!');
+                // var cellContent = genReceiptCell($('#merchant-id').val(), $('#merchant').val(), $('#amount').val(), $('#created').val());
+                // console.log(cellContent)
+                // $('#receiptList').append(cellContent);
+              },
+              error: function(model, xhr, options){
+
+                console.log('response is : ');
+                console.log(xhr.responseText);
+              }
+            });
+            // event.preventDefault();
+            // };
+            // );
+
+            $(that).parent().remove();
+        }
+
+        function foo(that) {
+            var tagInput = '<div><input class="tag_input" /><div class="button" onclick=removeTag(this)>Enter</div></div>'
+            $(that).after(`${tagInput}`);
+        }
+
+        function genReceiptCell(id, merchant, amount, created) {
+            return `<div class="receipt">
+                        <div class="merchant-id">${id}</div>
+                        <div class="merchant">${merchant}</div>
+                        <div class="amount">${amount}</div>
+                        <div class="created">${created}</div>
+                        <div class="tags"></div>
+                        <span class="receiptTag">t1-placeholder</span>
+                        <div class='button add-tag' onclick="foo(this)">Add +</div>
+                        <div class='input-holder'></div>
+                    </div>`
+        }
+
         $(function(){
             const api = ""; // <- do not need a root api URL if this page is served directly by the API
 
             $.getJSON(api+"/receipts", function(receipts){
                 for(var i=0; i < receipts.length; i++) {
                     var receipt = receipts[i];
-                    $(`<div class="receipt">${receipt.merchantName}<div><span class="receiptTag">t1</span></div></div>`)
+                    console.log(receipt);
+                    var cellContent = genReceiptCell(receipt.id, receipt.merchantName, receipt.value, receipt.created);
+                    $(cellContent)
                         .appendTo($("#receiptList"));
                 }
-
             })
+
+            $( "#add-receipt" ).click(function() {
+                $("#add-receipt-form").toggle();
+                $('#merchant').val('');;
+                $('#amount').val('');;
+            });    
         })
     </script>
 </head>
@@ -50,10 +113,33 @@
 <body>
 <DIV id="container">
     <h1>My receipts</h1>
-    <div class="button">+</div>
+    <div class="button" id="add-receipt">+</div>
+    <form action='' style="display:none" id='add-receipt-form'>
+        <input type='text' name='merchant' id='merchant' placeholder='merchant'><br>
+        <input type='text' name='amount' id='amount' placeholder='amount'><br>
+        <div class='button' id='cancel-receipt'>cancel</div>
+        <div class='button' id='save-receipt'>save</div>
+    </form>
     <div id="receiptList">
     </div>
 </DIV>
+<script>
+    $( "#save-receipt" ).click(function( event ) {
+        // alert('asdfasd');
+        $.ajax({
+          type: "POST",
+          url: "/receipts",
+          data: '{"merchant": "'+$('#merchant').val()+'","amount":'+$('#amount').val()+'}',
+          contentType: "application/json; charset=utf-8", 
+          success: function() {
+            var cellContent = genReceiptCell($('#merchant-id').val(), $('#merchant').val(), $('#amount').val(), $('#created').val());
+            console.log(cellContent)
+            $('#receiptList').append(cellContent);
+          }
+        });
+        event.preventDefault();
+    });
+</script>
 </body>
 
 </html>
