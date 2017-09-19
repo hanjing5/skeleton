@@ -88,10 +88,13 @@
 
         function detectEnter(that) {
             console.log('is tthishis invoked?');
+            console.log(that.keyCode);
             $(that).on("keypress", function(e) {
                 console.log('is this invoked?');
+                console.log(e.keyCode);
                 if (e.keyCode == 13) {
                     console.log("Enter pressed");
+                    // alert("Enter pressed");
                     var enter_button = $(that).siblings();
                     removeTag(enter_button);
                 }
@@ -152,7 +155,15 @@
 
         $(function(){
             const api = ""; // <- do not need a root api URL if this page is served directly by the API
-
+            $(document).keypress(function(e){
+                console.log('general keypress!');
+                console.log(e.keyCode);
+                if (e.keyCode === 13) {
+                    $( '.tag_input' ).each(function() {
+                        $(this).siblings().click();
+                    });
+                }
+            });
             $.getJSON(api+"/receipts", function(receipts){
                 for(var i=0; i < receipts.length; i++) {
                     var receipt = receipts[i];
@@ -214,9 +225,13 @@
             var cellContent = genReceiptCell(receipt_id, $('#merchant').val(), $('#amount').val(), Math.floor(Date.now() / 1000));
             console.log(cellContent)
             $('#receiptList').append(cellContent);
+            $("#add-receipt-form").toggle();
+            $('#merchant').val('');;
+            $('#amount').val('');;
           }
         });
         event.preventDefault();
+
     });
 </script>
 </body>
