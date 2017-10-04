@@ -12,6 +12,7 @@
 
     <!-- Custom styles for this template -->
     <link href="https://blackrockdigital.github.io/startbootstrap-freelancer/css/freelancer.min.css" rel="stylesheet">
+    <script src="http://momentjs.com/downloads/moment.min.js"></script>
     <style>
         form { margin-top: 15px; }
         form > input { margin-right: 15px; }
@@ -52,7 +53,7 @@
         #vidwrap {
             margin: 20px 0;
         }
-        #start, #snapshot {
+        #start-camera, #take-pic, #take-pic-cancel {
             height: 3em;
         }
     </style>
@@ -66,6 +67,7 @@
             imageCapture = new ImageCapture(track);
         }
         function startVideo() {
+            $('video').show();
             navigator.mediaDevices.getUserMedia({video: {facingMode: {exact: "environment"}}})
                 .then(attachMediaStream)
                 .catch(error => {
@@ -96,34 +98,36 @@
 
                         var merchantName = result.merchantName;
                         var amount = result.amount;
-                        $.ajax({
-                          type: "POST",
-                          url: "/receipts",
-                          data: '{"merchant": "'+merchantName+'","amount":'+amount+'}',
-                          contentType: "application/json; charset=utf-8", 
-                          success: function(receipt_id) {
-                            var cellContent = genReceiptCell(receipt_id, merchantName, amount, Math.floor(Date.now() / 1000));
-                            console.log(cellContent)
-                            $('#receiptList').append(cellContent);
-                            $("#add-receipt-form").toggle();
-                            $('#merchant').val('');;
-                            $('#amount').val('');;
-                          }
-                        })
+
+                        $('#merchant').val(merchantName);
+                        $('#amount').val(amount);
+                        $("#add-receipt-form").show();
+
+                        $('video').hide();
                     },
                 })
                 .then(response => {
-                    $('video').after(`<div>got response: <pre>${JSON.stringify(response)}</pre></div>`);
+                    // $('video').after(`<div>got response: <pre>${JSON.stringify(response)}</pre></div>`);
                 })
                 .always(() => console.log('request complete'));
                 // For debugging, you can uncomment this to see the frame that was captured
                 // $('BODY').append(canvas);
             });
         }
+        function cancelSnapshot() {
+            $('video').hide();
+            $('#merchant').val('');
+            $('#amount').val('');
+            $("#add-receipt-form").hide();
+        }
         $(function () {
-            $('#start').on('click', startVideo);
-            $('video').on('play', () => $('#snapshot').prop('disabled', false));
-            $('#snapshot').on('click', takeSnapshot);
+            $('#start-camera').on('click', startVideo);
+            $('video').on('play',  () => {
+                $('#take-pic').prop('disabled', false)
+                $('#take-pic-cancel').prop('disabled', false)
+            });
+            $('#take-pic').on('click', takeSnapshot);
+            $('#take-pic-cancel').on('click', cancelSnapshot);
         });
     </script>
     <script>
@@ -303,38 +307,13 @@
         </div>
     </div>
 </DIV>
-<button id="start">Start Video</button>
-<button id="snapshot" disabled="true">Take a Snapshot!</button>
+<button id="start-camera">Start Video</button>
+<button id="take-pic" disabled="true">Take a Snapshot!</button>
+<button id="take-pic-cancel" disabled="true">Cancel Snapshot</button>
 <br>
 <div id="vidwrap">
     <video autoplay></video>
     </div>
-<!-- <div id="results">Your captured image will appear here...</div>
-    
-    <h1>WebcamJS Test Page</h1>
-    <h3>Demonstrates simple 320x240 capture &amp; display</h3> -->
-    
-<!--     <div id="my_camera"></div> -->
-    
-    <!-- First, include the Webcam.js JavaScript Library -->
-<!--     <script type="text/javascript" src="https://pixlcore.com/demos/webcamjs/webcam.min.js"></script>
-     -->
-    <!-- Configure a few settings and attach camera -->
-<!--     <script language="JavaScript">
-        Webcam.set({
-            width: 320,
-            height: 240,
-            image_format: 'jpeg',
-            jpeg_quality: 90
-        });
-        Webcam.attach( '#my_camera' );
-    </script> -->
-    
-    <!-- A button for taking snaps -->
-<!--     <form>
-        <input type=button value="Take Snapshot" onClick="take_snapshot()">
-    </form>
- -->
 <script>
     $( "#save-receipt" ).click(function( event ) {
         $.ajax({
@@ -343,7 +322,7 @@
           data: '{"merchant": "'+$('#merchant').val()+'","amount":'+$('#amount').val()+'}',
           contentType: "application/json; charset=utf-8", 
           success: function(receipt_id) {
-            var cellContent = genReceiptCell(receipt_id, $('#merchant').val(), $('#amount').val(), Math.floor(Date.now() / 1000));
+            var cellContent = genReceiptCell(receipt_id, $('#merchant').val(), $('#amount').val(), moment().format('HH:mm:ss'));
             console.log(cellContent)
             $('#receiptList').append(cellContent);
             $("#add-receipt-form").toggle();
@@ -354,16 +333,6 @@
         event.preventDefault();
 
     });
-
-        //     function take_snapshot() {
-        //     // take snapshot and get image data
-        //     Webcam.snap( function(data_uri) {
-        //         // display results in page
-        //         document.getElementById('results').innerHTML = 
-        //             '<h2>Here is your image:</h2>' + 
-        //             '<img src="'+data_uri+'"/>';
-        //     } );
-        // }
 </script>
 
 </body>
