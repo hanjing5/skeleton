@@ -18,6 +18,5 @@ public class CreateReceiptRequest {
 
     public BigDecimal amount;
 
-    @NotEmpty
     public String image;
 }
