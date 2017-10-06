@@ -13,7 +13,7 @@
     <!-- Custom styles for this template -->
     <link href="https://blackrockdigital.github.io/startbootstrap-freelancer/css/freelancer.min.css" rel="stylesheet">
 
-    <script src="http://momentjs.com/downloads/moment.min.js"></script>
+    <script src="//momentjs.com/downloads/moment.min.js"></script>
     <style>
         form { margin-top: 15px; }
         form > input { margin-right: 15px; }
@@ -68,13 +68,18 @@
             imageCapture = new ImageCapture(track);
         }
 
-        function deattachMediaStream(mediaStream) {
-            $('video')[0].srcObject = mediaStream;
-            // Saving the track allows us to capture a photo
-            track = mediaStream.getVideoTracks()[0];
-            track.stop();
-            // imageCapture = new ImageCapture(track);
-        }
+        // function deattachMediaStream(mediaStream) {
+        //     $('video')[0].srcObject = mediaStream;
+        //     // Saving the track allows us to capture a photo
+        //     track = mediaStream.getVideoTracks()[0];
+        //     mediaStream.getVideoTracks().forEach(function(track){
+        //         console.log(track);
+        //         console.log('stoping track');
+        //         track.stop();
+        //     });
+        //     // track.stop();
+        //     // imageCapture = new ImageCapture(track);
+        // }
 
         function startVideo() {
             $('video').show();
@@ -89,18 +94,17 @@
                 })
         }
 
-        function stopVideo() {
-            $('video').show();
-            navigator.mediaDevices.getUserMedia({video: {facingMode: {exact: "environment"}}})
-                .then(deattachMediaStream)
-                .catch(error => {
-                    navigator.mediaDevices.getUserMedia({video: true})
-                        .then(deattachMediaStream)
-                        .catch(error => {
-                            console.log('you are fooked at closing the video');
-                        })
-                })
-        }
+        // function stopVideo() {
+        //     navigator.mediaDevices.getUserMedia({video: {facingMode: {exact: "environment"}}})
+        //         .then(deattachMediaStream)
+        //         .catch(error => {
+        //             navigator.mediaDevices.getUserMedia({video: false})
+        //                 .then(deattachMediaStream)
+        //                 .catch(error => {
+        //                     console.log('you are fooked at closing the video');
+        //                 })
+        //         })
+        // }
 
         // function getImagePortion(imgObj, newWidth, newHeight, startX, startY, ratio){
         //     /* the parameters: - the image element - the new width - the new height - the x point we start taking pixels - the y point we start taking pixels - the ratio */
@@ -132,8 +136,8 @@
 
                 const base64EncodedImageData = canvas.toDataURL('image/png').split(',')[1];
 
-                var context = canvas.getContext('2d');
-                var imageObj = new Image();
+                // var context = canvas.getContext('2d');
+                // var imageObj = new Image();
                 // imageObj.src = 'http://www.html5canvastutorials.com/demos/assets/darth-vader.jpg';
                 
                 $.ajax({
@@ -148,27 +152,46 @@
                         var merchantName = result.merchantName;
                         var amount = result.amount;
                         var splitCoord = result.xycoord.split("-");
-                        var minx = splitCoord[0];
-                        var maxx = splitCoord[1];
-                        var miny = splitCoord[2];
-                        var maxy = splitCoord[3];
+                        var minx = parseInt(splitCoord[0]);
+                        var maxx = parseInt(splitCoord[1]);
+                        var miny = parseInt(splitCoord[2]);
+                        var maxy = parseInt(splitCoord[3]);
 
+                        // imageObj.onload = function() {
+                        //     // draw cropped image
+                        //     var sourceX = 150;
+                        //     var sourceY = 0;
+                        //     var sourceWidth = 150;
+                        //     var sourceHeight = 150;
+                        //     var destWidth = sourceWidth;
+                        //     var destHeight = sourceHeight;
+                        //     var destX = canvas.width / 2 - destWidth / 2;
+                        //     var destY = canvas.height / 2 - destHeight / 2;
 
-                        imageObj.onload = function() {
-                            // draw cropped image
-                            var sourceX = 150;
-                            var sourceY = 0;
-                            var sourceWidth = 150;
-                            var sourceHeight = 150;
-                            var destWidth = sourceWidth;
-                            var destHeight = sourceHeight;
-                            var destX = canvas.width / 2 - destWidth / 2;
-                            var destY = canvas.height / 2 - destHeight / 2;
+                        //     context.drawImage(imageObj, sourceX, sourceY, sourceWidth, sourceHeight, destX, destY, destWidth, destHeight);
+                        // };
 
-                            context.drawImage(imageObj, sourceX, sourceY, sourceWidth, sourceHeight, destX, destY, destWidth, destHeight);
-                        };
+                        console.log(canvas);
 
-                        // imageObj.src = base64EncodedImageData;
+                        console.log(img);
+                        // canvas.getContext('2d').drawImage(img, 0, 0);
+
+                        var canvas1 = document.getElementById('myCanvas');
+                        var ctx = canvas1.getContext('2d');
+
+                        ctx.drawImage(img,
+                            minx, miny,   // Start at 10 pixels from the left and the top of the image (crop),
+                            maxx - minx, maxy - miny,   // "Get" a `80 * 30` (w * h) area from the source image (crop),
+                            0, 0,     // Place the result at 0, 0 in the canvas,
+                            100, 100
+                        ); // With as width / height: 160 * 60 (scale)
+
+                        const base64EncodedThumbnailData = canvas1.toDataURL('image/png');
+                        console.log(base64EncodedThumbnailData);
+                        // img.onload = function(){
+                        //   ctx.drawImage(img,0,0); // Or at whatever offset you like
+                        // };
+                        // img.src = 'data:image/jpeg;base64,' + base64EncodedImageData;
                         // var cropper = new Cropper(imbase64EncodedImageDataage, {
                         //   aspectRatio: 1 / 1,
                         //   crop: function(e) {
@@ -179,11 +202,12 @@
 
                         $('#merchant').val(merchantName);
                         $('#amount').val(amount);
-                        $('#thumbnail').val('somebase64data');
+                        $('#thumbnail').val(base64EncodedThumbnailData);
                         $("#add-receipt-form").show();
 
                         // $('video').hide();
-                        stopVideo();
+                        // stopVideo();
+                        track.stop();
                         // $('#hanspictureholder').attr("src", croppedImage);
                     },
                 })
@@ -197,11 +221,11 @@
         }
         function cancelSnapshot() {
             // $('video').hide();
-            stopVideo();
+            // stopVideo();
             $('#merchant').val('');
             $('#amount').val('');
             $("#add-receipt-form").hide();
-
+            track.stop();
         }
         $(function () {
             $('#start-camera').on('click', startVideo);
@@ -211,6 +235,7 @@
             });
             $('#take-pic').on('click', takeSnapshot);
             $('#take-pic-cancel').on('click', cancelSnapshot);
+
         });
     </script>
     <script>
@@ -316,7 +341,7 @@
             $(that).after(`${tagInput}`);
         }
 
-        function genReceiptCell(id, merchant, amount, created) {
+        function genReceiptCell(id, merchant, amount, image, created) {
             return `<div class="receipt row align-items-center" id="receipt-id-${id}">
                         <div class="created col">${created}</div>
                         <div class="receipt-id col" style="display:none">${id}</div>
@@ -327,7 +352,9 @@
                             <div class="tags" id="tag-holder-for-receipt-id-${id}"></div>
                         </div>
                         <div class="thumbnails col">
+                            <img src="${image}">
                         </div>
+
                     </div>`
         }
 
@@ -346,7 +373,7 @@
                 for(var i=0; i < receipts.length; i++) {
                     var receipt = receipts[i];
                     console.log(receipt);
-                    var cellContent = genReceiptCell(receipt.id, receipt.merchantName, receipt.value, receipt.created);
+                    var cellContent = genReceiptCell(receipt.id, receipt.merchantName, receipt.value, receipt.image, receipt.created);
                     $(cellContent)
                         .appendTo($("#receiptList"));
                 }
@@ -402,16 +429,17 @@
     <video autoplay></video>
 </div>
 <img id="hanspictureholder" />
-<canvas id="myCanvas" width="578" height="200"></canvas>
+<canvas id="myCanvas" width="100" height="100"></canvas>
 <script>
     $( "#save-receipt" ).click(function( event ) {
+        var thumbnailb64 = $('#thumbnail').val();
         $.ajax({
           type: "POST",
           url: "/receipts",
-          data: '{"merchant": "'+$('#merchant').val()+'","amount":'+$('#amount').val()+'}',
+          data: '{"merchant": "'+$('#merchant').val()+'","amount":'+$('#amount').val()+',"image":"'+thumbnailb64+'"}',
           contentType: "application/json; charset=utf-8", 
           success: function(receipt_id) {
-            var cellContent = genReceiptCell(receipt_id, $('#merchant').val(), $('#amount').val(), moment().format('HH:mm:ss'));
+            var cellContent = genReceiptCell(receipt_id, $('#merchant').val(), $('#amount').val(), thumbnailb64, moment().format('HH:mm:ss'));
             console.log(cellContent)
             $('#receiptList').append(cellContent);
             $("#add-receipt-form").toggle();
