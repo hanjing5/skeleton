@@ -12,6 +12,7 @@
 
     <!-- Custom styles for this template -->
     <link href="https://blackrockdigital.github.io/startbootstrap-freelancer/css/freelancer.min.css" rel="stylesheet">
+
     <script src="http://momentjs.com/downloads/moment.min.js"></script>
     <style>
         form { margin-top: 15px; }
@@ -66,6 +67,15 @@
             track = mediaStream.getVideoTracks()[0];
             imageCapture = new ImageCapture(track);
         }
+
+        function deattachMediaStream(mediaStream) {
+            $('video')[0].srcObject = mediaStream;
+            // Saving the track allows us to capture a photo
+            track = mediaStream.getVideoTracks()[0];
+            track.stop();
+            // imageCapture = new ImageCapture(track);
+        }
+
         function startVideo() {
             $('video').show();
             navigator.mediaDevices.getUserMedia({video: {facingMode: {exact: "environment"}}})
@@ -78,6 +88,39 @@
                         })
                 })
         }
+
+        function stopVideo() {
+            $('video').show();
+            navigator.mediaDevices.getUserMedia({video: {facingMode: {exact: "environment"}}})
+                .then(deattachMediaStream)
+                .catch(error => {
+                    navigator.mediaDevices.getUserMedia({video: true})
+                        .then(deattachMediaStream)
+                        .catch(error => {
+                            console.log('you are fooked at closing the video');
+                        })
+                })
+        }
+
+        // function getImagePortion(imgObj, newWidth, newHeight, startX, startY, ratio){
+        //     /* the parameters: - the image element - the new width - the new height - the x point we start taking pixels - the y point we start taking pixels - the ratio */
+        //     //set up canvas for thumbnail
+        //     var tnCanvas = document.createElement('canvas');
+        //     var tnCanvasContext = canvas.getContext('2d');
+        //     tnCanvas.width = newWidth; tnCanvas.height = newHeight;
+
+        //      use the sourceCanvas to duplicate the entire image. This step was crucial for iOS4 and under devices. Follow the link at the end of this post to see what happens when you don’t do this 
+        //     var bufferCanvas = document.createElement('canvas');
+        //     var bufferContext = bufferCanvas.getContext('2d');
+        //     bufferCanvas.width = imgObj.width;
+        //     bufferCanvas.height = imgObj.height;
+        //     bufferContext.drawImage(imgObj, 0, 0);
+
+        //     /* now we use the drawImage method to take the pixels from our bufferCanvas and draw them into our thumbnail canvas */
+        //     tnCanvasContext.drawImage(bufferCanvas, startX,startY,newWidth * ratio, newHeight * ratio,0,0,newWidth,newHeight);
+        //     return tnCanvas.toDataURL();
+        // }
+
         function takeSnapshot() {
             // create a CANVAS element that is same size as the image
             imageCapture.grabFrame()
@@ -86,7 +129,13 @@
                 canvas.width = img.width;
                 canvas.height = img.height;
                 canvas.getContext('2d').drawImage(img, 0, 0);
+
                 const base64EncodedImageData = canvas.toDataURL('image/png').split(',')[1];
+
+                var context = canvas.getContext('2d');
+                var imageObj = new Image();
+                // imageObj.src = 'http://www.html5canvastutorials.com/demos/assets/darth-vader.jpg';
+                
                 $.ajax({
                     url: "/images",
                     type: "POST",
@@ -98,12 +147,44 @@
 
                         var merchantName = result.merchantName;
                         var amount = result.amount;
+                        var splitCoord = result.xycoord.split("-");
+                        var minx = splitCoord[0];
+                        var maxx = splitCoord[1];
+                        var miny = splitCoord[2];
+                        var maxy = splitCoord[3];
+
+
+                        imageObj.onload = function() {
+                            // draw cropped image
+                            var sourceX = 150;
+                            var sourceY = 0;
+                            var sourceWidth = 150;
+                            var sourceHeight = 150;
+                            var destWidth = sourceWidth;
+                            var destHeight = sourceHeight;
+                            var destX = canvas.width / 2 - destWidth / 2;
+                            var destY = canvas.height / 2 - destHeight / 2;
+
+                            context.drawImage(imageObj, sourceX, sourceY, sourceWidth, sourceHeight, destX, destY, destWidth, destHeight);
+                        };
+
+                        // imageObj.src = base64EncodedImageData;
+                        // var cropper = new Cropper(imbase64EncodedImageDataage, {
+                        //   aspectRatio: 1 / 1,
+                        //   crop: function(e) {
+                        //     console.log(e.detail.x);
+                        //     console.log(e.detail.y);
+                        //   }
+                        // });
 
                         $('#merchant').val(merchantName);
                         $('#amount').val(amount);
+                        $('#thumbnail').val('somebase64data');
                         $("#add-receipt-form").show();
 
-                        $('video').hide();
+                        // $('video').hide();
+                        stopVideo();
+                        // $('#hanspictureholder').attr("src", croppedImage);
                     },
                 })
                 .then(response => {
@@ -115,10 +196,12 @@
             });
         }
         function cancelSnapshot() {
-            $('video').hide();
+            // $('video').hide();
+            stopVideo();
             $('#merchant').val('');
             $('#amount').val('');
             $("#add-receipt-form").hide();
+
         }
         $(function () {
             $('#start-camera').on('click', startVideo);
@@ -243,6 +326,8 @@
                             <div class='button add-tag btn btn-warning' onclick="foo(this)">Add +</div>
                             <div class="tags" id="tag-holder-for-receipt-id-${id}"></div>
                         </div>
+                        <div class="thumbnails col">
+                        </div>
                     </div>`
         }
 
@@ -293,6 +378,7 @@
     <form action='' style="display:none" id='add-receipt-form'>
         <input type='text' name='merchant' id='merchant' placeholder='merchant'><br>
         <input type='text' name='amount' id='amount' placeholder='amount'><br>
+        <input type='hidden' name='thumbnail' id='thumbnail' placeholder='thumbnail'><br>
         <div class="row">
             <div class='button col btn btn-warning' id='cancel-receipt'>cancel</div>
             <div class='button col btn btn-warning' id='save-receipt'>save</div>
@@ -304,6 +390,7 @@
             <div class="col"><h5>Merchant</h5></div>
             <div class="col"><h5>$</h5></div>
             <div class="col"><h5>Tags</h5></div>
+            <div class="col"><h5>Thumbnails</h5></div>
         </div>
     </div>
 </DIV>
@@ -313,7 +400,9 @@
 <br>
 <div id="vidwrap">
     <video autoplay></video>
-    </div>
+</div>
+<img id="hanspictureholder" />
+<canvas id="myCanvas" width="578" height="200"></canvas>
 <script>
     $( "#save-receipt" ).click(function( event ) {
         $.ajax({

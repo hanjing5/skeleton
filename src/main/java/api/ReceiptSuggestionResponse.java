@@ -13,9 +13,12 @@ public class ReceiptSuggestionResponse {
     @JsonProperty
     public final BigDecimal amount;
 
+    @JsonProperty
+    public final String xycoord;
 
-    public ReceiptSuggestionResponse(String merchantName, BigDecimal amount) {
+    public ReceiptSuggestionResponse(String merchantName, BigDecimal amount, String cropCoord) {
         this.merchantName = merchantName;
         this.amount = amount;
+        this.xycoord = cropCoord;
     }
 }

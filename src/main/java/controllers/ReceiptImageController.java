@@ -62,13 +62,54 @@ public class ReceiptImageController {
             ArrayList<String> amounts = new ArrayList<String>();
             ArrayList<String> merchants = new ArrayList<String>();
 
+            ArrayList<Integer> xs = new ArrayList<Integer>();
+            ArrayList<Integer> ys = new ArrayList<Integer>();
+            String cropCoordStr = "";
+
             for (EntityAnnotation annotation : res.getTextAnnotationsList()) {
-                // System.out.printf("Position : %s\n", annotation.getBoundingPoly());
-                // System.out.printf("Text: %s\n", annotation.getDescription());
                 System.out.println();
+                // System.out.printf("Position : %s\n", annotation.getBoundingPoly());
+                // System.out.println(annotation.getBoundingPoly().getVertices());
+                BoundingPoly bp = annotation.getBoundingPoly();
+
+                xs.add(bp.getVertices(0).getX());
+                xs.add(bp.getVertices(1).getX());
+                xs.add(bp.getVertices(2).getX());
+                xs.add(bp.getVertices(3).getX());
+
+                ys.add(bp.getVertices(0).getY());
+                ys.add(bp.getVertices(1).getY());
+                ys.add(bp.getVertices(2).getY());
+                ys.add(bp.getVertices(3).getY());
+
+                System.out.println(bp.getVertices(0).getX());
+                System.out.println(bp.getVertices(1));
+                System.out.println(bp.getVertices(2));
+                System.out.println(bp.getVertices(3));
+
+                // Coord format is min x- max x - min y - max y
+                Integer minx = Collections.min(xs);
+                Integer maxx = Collections.max(xs);
+
+                Integer miny = Collections.min(ys);
+                Integer maxy = Collections.max(ys);
+
+                cropCoordStr = minx.toString() + "-" + maxx.toString() + "-" + miny.toString() + "-" + maxy.toString();
+                System.out.println(cropCoordStr);
+
+                // System.out.println(bp.getVertices());
+                // for (Vertex v: bp.getVertices()) {
+                //     System.out.println(v.getX());
+                //     System.out.println(v.getY());
+                // }
+                // System.out.printf(annotation.getBoundingPoly());
+                System.out.printf("Text: %s\n", annotation.getDescription());
+                // System.out.println();
                 String currentText = annotation.getDescription();
-                System.out.println(currentText);
-                System.out.println(isNumeric(currentText));
+                System.out.println();
+
+                // System.out.println(currentText);
+                // System.out.println(isNumeric(currentText));
 
                 if (isNumeric(currentText)) {    
                     amounts.add(currentText);
@@ -76,10 +117,10 @@ public class ReceiptImageController {
                     merchants.add(currentText);                    
                 }
             }
-            System.out.println("Do we exit the loop first?");
+            // System.out.println("Do we exit the loop first?");
 
-            System.out.println(amounts);
-            System.out.println(merchants);
+            // System.out.println(amounts);
+            // System.out.println(merchants);
 
             if (amounts.size() > 0) {
                 amount = new BigDecimal(amounts.get(amounts.size() - 1));
@@ -87,26 +128,27 @@ public class ReceiptImageController {
             
             if (merchants.size() > 0) {
                 merchantName = merchants.get(1); // grab the second element because the first element is everything joined by the newline character
-                System.out.println();
-                System.out.println("This is the first element from merchants arraylist");
-                System.out.println(merchantName);
-                System.out.println();
+                // System.out.println();
+                // System.out.println("This is the first element from merchants arraylist");
+                // System.out.println(merchantName);
+                // System.out.println();
             }
         
-            System.out.println("assigned everything to variables");
-            System.out.println(merchants.size());
-            // System.out.println(annotation.getDescription();
-            System.out.println("Merchant: " + merchantName);
-            System.out.println(amounts.size());
-            System.out.println("Amount: " + amount.toString());
-            System.out.println("iterating the second time to print everything");
+            // System.out.println("assigned everything to variables");
+            // System.out.println(merchants.size());
+            // // System.out.println(annotation.getDescription();
+            // System.out.println("Merchant: " + merchantName);
+            // System.out.println(amounts.size());
+            // System.out.println("Amount: " + amount.toString());
+            // System.out.println("iterating the second time to print everything");
             //   // For full list of available annotations, see http://g.co/cloud/vision/docs
             //   for (EntityAnnotation annotation : res.getLabelAnnotationsList()) {
             //     annotation.getAllFields().forEach((k, v) -> System.out.printf("%s : %s\n", k, v.toString()));
             // }
 
             //TextAnnotation fullTextAnnotation = res.getFullTextAnnotation();
-            return new ReceiptSuggestionResponse(merchantName, amount);
+
+            return new ReceiptSuggestionResponse(merchantName, amount, cropCoordStr);
         } 
     }
 }
